@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
-
+const cloudinary = require("../config/cloudinary");
 // ================= GET CURRENT USER =================
 const getUserProfile = async (req, res) => {
   try {
@@ -58,27 +58,45 @@ const changePassword = async (req, res) => {
 
 
 
-// ✅ Upload user image
-const uploadImage = async (req, res) => {
+// ======== UPLOAD IMAGE =========
+const uploadProfileImage = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, msg: "No file uploaded" });
+      return res.status(400).json({ msg: "No file uploaded" });
     }
 
-    // Update logged-in user image
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      { image: `/uploads/${req.file.filename}` }, // Save relative path
-      { new: true }
-    ).select("-password");
+    // Wrap Cloudinary upload_stream in a Promise
+    const streamUpload = (fileBuffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "profile_images" },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          }
+        );
+        stream.end(fileBuffer); // send file buffer to Cloudinary
+      });
+    };
+
+    // Upload image
+    const result = await streamUpload(req.file.buffer);
+
+    // Save image URL in DB
+const user = await User.findByIdAndUpdate(
+  req.user._id,
+  { image: result.secure_url },
+  { new: true }
+);
 
     res.json({
       success: true,
-      msg: "Profile image updated",
-      user: updatedUser,
+      msg: "Profile image updated successfully",
+      user,
     });
   } catch (error) {
-    res.status(500).json({ success: false, msg: error.message });
+    console.error("Upload error:", error);
+    res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
 
@@ -103,6 +121,7 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   changePassword,
-  uploadImage,
-  updateProfile
+  updateProfile,
+  uploadProfileImage
+
 };
