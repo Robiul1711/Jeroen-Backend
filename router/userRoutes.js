@@ -17,7 +17,7 @@ router.get("/me", authMiddleware, getUserProfile);
 router.put("/update", authMiddleware, updateUserProfile);
 router.put("/change-password", authMiddleware, changePassword);
 // router.post("/upload-image", authMiddleware, upload.single("image"), uploadImage);
-router.post("/upload-image", upload.single("image"), uploadProfileImage);
+router.post("/upload-image",authMiddleware, upload.single("image"), uploadProfileImage);
 router.put("/update-profile", authMiddleware, updateProfile);
 
 module.exports = router;
