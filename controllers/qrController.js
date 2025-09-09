@@ -1,31 +1,59 @@
+// controllers/qrController.js
 const QrCode = require("../models/QrCode");
 
-// POST: create QR code
 const createQrCode = async (req, res) => {
   try {
     const { data, type } = req.body;
-    if (!data || !type) return res.status(400).json({ msg: "Data and type are required" });
+    const userId = req.user._id; // from auth middleware
 
-    const qr = await QrCode.create({
+    const qr = new QrCode({
       data,
       type,
-      user: req.user?._id, // if you have auth middleware
+      user: userId,
     });
 
-    res.status(201).json({ msg: "QR code saved", qr });
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
+    await qr.save();
+
+    res.status(201).json({ success: true, qr });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// GET: fetch QR code history
+
+// ✅ Get History (only logged-in user's QR codes)
 const getQrHistory = async (req, res) => {
   try {
-    const qrs = await QrCode.find({ user: req.user?._id }).sort({ createdAt: -1 });
-    res.json(qrs);
-  } catch (err) {
-    res.status(500).json({ msg: err.message });
+    const userId = req.user._id; // from auth middleware
+
+    const history = await QrCode.find({ user: userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, history });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-module.exports = { createQrCode, getQrHistory };
+const deleteQrCode = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id; // assuming you have user info from auth middleware
+
+    const qr = await QrCode.findById(id);
+    if (!qr) {
+      return res.status(404).json({ success: false, message: "QR code not found" });
+    }
+
+    // Only owner can delete
+    if (!qr.user || qr.user.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "You are not authorized to delete this QR code" });
+    }
+
+    await qr.deleteOne();
+    res.status(200).json({ success: true, message: "QR code deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { createQrCode, getQrHistory, deleteQrCode };

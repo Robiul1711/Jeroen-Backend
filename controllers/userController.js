@@ -56,8 +56,53 @@ const changePassword = async (req, res) => {
   }
 };
 
+
+
+// ✅ Upload user image
+const uploadImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, msg: "No file uploaded" });
+    }
+
+    // Update logged-in user image
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { image: `/uploads/${req.file.filename}` }, // Save relative path
+      { new: true }
+    ).select("-password");
+
+    res.json({
+      success: true,
+      msg: "Profile image updated",
+      user: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, msg: error.message });
+  }
+};
+
+// Update user info
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { name, phone } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { name, phone },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ success: true, user: updatedUser, msg: "Profile updated successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, msg: err.message });
+  }
+};
 module.exports = {
   getUserProfile,
   updateUserProfile,
   changePassword,
+  uploadImage,
+  updateProfile
 };
