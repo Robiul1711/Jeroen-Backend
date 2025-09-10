@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../config/email");
+const BASE_URL_FRONTEND=import.meta.env.BASE_URL_FRONTEND
 
 // ================= SIGN UP =================
 const register = async (req, res) => {
@@ -66,7 +67,7 @@ const forgotPassword = async (req, res) => {
     user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 mins
     await user.save();
 
-    const resetUrl = `http://localhost:5173/auth/reset-password/${resetToken}`;
+    const resetUrl = `${BASE_URL_FRONTEND}/auth/reset-password/${resetToken}`;
     await sendEmail(user.email, "Password Reset", `Reset here: ${resetUrl}`);
 
     res.json({ msg: "Password reset link sent to email" });
