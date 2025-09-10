@@ -9,26 +9,12 @@ connectDB();
 const app = express();
 app.use(express.json());
 
-const allowedOrigins = [
-  "https://jereon-qr-code-generator.netlify.app",
-  "http://localhost:3000",
-];
+const allowedOrigins = {
+  origin: "https://jereon-qr-code-generator.netlify.app",
+  credentials: true
+}
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
-
-// Preflight
-app.options("*", cors());
+app.use(cors(allowedOrigins));
 
 // ✅ Serve uploaded images
 app.use("/uploads", express.static("uploads"));
