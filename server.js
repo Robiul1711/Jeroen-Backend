@@ -34,7 +34,7 @@ app.options("*", cors());
 app.use("/uploads", express.static("uploads"));
 
 // Routes
-app.use("/auth", require("./router/authRoutes.js"));
+app.use("/api/auth", require("./router/authRoutes.js"));
 app.use("/api/qr", require("./router/qrRoutes.js"));
 app.use("/api/user", require("./router/userRoutes.js"));
 

@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../config/email");
 const BASE_URL_FRONTEND = process.env.BASE_URL_FRONTEND;
-
+console.log(BASE_URL_FRONTEND);
 
 // ================= SIGN UP =================
 const register = async (req, res) => {
