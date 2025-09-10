@@ -3,7 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../config/email");
-const BASE_URL_FRONTEND=import.meta.env.BASE_URL_FRONTEND
+const BASE_URL_FRONTEND = process.env.BASE_URL_FRONTEND;
+
 
 // ================= SIGN UP =================
 const register = async (req, res) => {
